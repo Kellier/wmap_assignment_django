@@ -1,0 +1,32 @@
+from . import models
+from wmap_assingnment_django import settings
+from rest_framework import serializers
+from rest_framework_gis import serializers as geo_serializers
+from rest_framework.reverse import reverse
+from django.contrib.auth import get_user_model
+from django.contrib.gis.geos import GEOSGeometry, LineString, Point, Polygon
+
+class UserMainSerializer(geo_serializers.GeoFeatureModelSerializer):
+    url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = get_user_model()
+        geo_field = "last_shop_visited"
+        fields = (
+            "id", "username", "first_name", "last_name", "email", "is_superuser", \
+            "is_online", "date_joined", "last_login", "url"
+        )
+
+        def get_url(self, obj):
+            return self.context["request"].build_absolute_uri(reverse("rest:user-username", kwargs={"uid": obj.pk}))
+
+class UserRegularSerializer(geo_serializers.GeoFeatureModelSerializer):
+    url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = get_user_model()
+        geo_field = "last_shop_visited"
+        fields = ("id", "username", "first_name", "last_name", "email", "url")
+
+        def get_url(self, obj):
+            return self.context["request"].build_absolute_uri(reverse("rest:user-username", kwargs={"uid": obj.pk}))
