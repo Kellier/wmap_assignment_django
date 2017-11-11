@@ -1,4 +1,4 @@
-{% extends "app/main.html" %}
+{% extends "app/base.html" %}
 
 {% load staticfiles %}
 {% load leaflet_tags %}
@@ -22,7 +22,7 @@
     {% endif %}
 
     {% if user.is_authenticated %}
-        <form method="post" action="{% url 'app:profile' %}">
+        <form method="post" action="{% url 'app:userprofile' %}">
             {% csrf_token %}
             <table style="padding: 10px; width: 100%">
                 <tr>
@@ -53,6 +53,7 @@
                     <td style="text-align: right;"></td>
                     <td><input type="submit" value="Update Profile"/></td>
                 </tr>
+                {#                {{ form.as_table }}#}
             </table>
 
 
@@ -75,18 +76,7 @@
         }
     </script>
 
-    <p id="geom" style="visibility: hidden; display: none">{{ object.last_shop_visited.geojson }}</p>
-
-    <script>
-        {# In here will be code to check to see what burrito bars the user has visited last #}
-    </script>
-
     <h3>Last known location</h3>
-    <div style="text-align: center">
-        {% leaflet_map "my_map" callback="map_init" %}
-    </div>
-
-    <h3>Last Burrito Bar Visited</h3>
     <div style="text-align: center">
         {% leaflet_map "my_map" callback="map_init" %}
     </div>

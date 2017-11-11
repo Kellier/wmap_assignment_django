@@ -1,4 +1,4 @@
-{% extends "app/main.html" %}
+{% extends "app/base.html" %}
 
 {% load staticfiles %}
 
@@ -28,6 +28,14 @@
         <form method="post" action="{% url 'app:login' %}">
             {% csrf_token %}
             <table>
+{#                <tr>#}
+{#                    <td>{{ form.username.label_tag }}</td>#}
+{#                    <td>{{ form.username }}</td>#}
+{#                </tr>#}
+{#                <tr>#}
+{#                    <td>{{ form.password.label_tag }}</td>#}
+{#                    <td>{{ form.password }}</td>#}
+{#                </tr>#}
                 {{ form.as_table }}
             </table>
 

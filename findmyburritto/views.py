@@ -1,12 +1,15 @@
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect, render_to_response
 from django.core.urlresolvers import reverse
 from django.utils.decorators import method_decorator
 
 from django.forms import ValidationError
-from django.views.generic.edit import UpdateView
-
+from django.views.generic import TemplateView
+from django.views.generic.base import View
+from django.views.generic.edit import FormView, UpdateView, CreateView, DeleteView
+from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
 
 from . import forms
 
@@ -15,6 +18,11 @@ from . import forms
 def logout_view(request):
     logout(request)
     return redirect(reverse('app:login'))
+
+@login_required
+def landing(request):
+    return render(request, 'app/landing.html')
+
 
 def login_view(request):
     # if this is a POST request we need to process the form data
@@ -32,14 +40,14 @@ def login_view(request):
             if user:
                 if user.is_active:
                     login(request, user)
-                    return redirect(reverse('app:profile'))
+                    return redirect(reverse('app:landing'))
                 else:
                     form.add_error(None, ValidationError(
-                        "No active account."
+                        "Your account is not active."
                     ))
             else:
                 form.add_error(None, ValidationError(
-                    "Invalid User Id or Password"
+                    "Invalid User Id of Password"
                 ))
 
     # if a GET (or any other method) we'll create a blank form
@@ -82,7 +90,7 @@ def signup_view(request):
 
 class UserProfile(UpdateView):
     form_class = forms.UserProfileForm
-    template_name = "app/profile.html"
+    template_name = "app/user_profile.html"
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
@@ -90,3 +98,4 @@ class UserProfile(UpdateView):
 
     def get_object(self, queryset=None):
         return get_user_model().objects.get(pk=self.request.user.pk)
+

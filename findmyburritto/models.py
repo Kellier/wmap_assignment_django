@@ -1,4 +1,3 @@
-from django.db import models
 from django.contrib.gis.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -14,10 +13,39 @@ class User(AbstractUser):
         blank=True,
         null=True
     )
-    last_shop_visited = models.PointField(
-        verbose_name="last burrito bar visited",
+    created = models.DateTimeField(
+        auto_now_add=True
+    )
+    modified = models.DateTimeField(
+        auto_now=True
+    )
+
+    # objects = models.GeoManager()
+
+    def __str__(self):
+        return "{}, ({}), last seen at {} ... cr={}, mod={}" \
+            .format(self.username, self.get_full_name(), self.last_location, self.created, self.modified)
+
+
+class FriendGroup(models.Model):
+    class Meta:
+        verbose_name = "friends list"
+        verbose_name_plural = "friends lists"
+
+    name = models.CharField(
+        max_length=100,
         blank=True,
-        null=True
+        verbose_name="name"
+    )
+    owner = models.ForeignKey(
+        User,
+        related_name="list_owner",
+        verbose_name="owner",
+        on_delete=models.CASCADE
+    )
+    members = models.ManyToManyField(
+        User,
+        through='UserFriendGroup'
     )
     created = models.DateTimeField(
         auto_now_add=True
@@ -26,9 +54,40 @@ class User(AbstractUser):
         auto_now=True
     )
 
+    # objects = models.Manager()
+
     def __str__(self):
-        return "{}, ({}), last seen at {} visiting {} ... cr={}, mod={}" \
-            .format(self.username, self.get_full_name(), self.last_location, self.last_shop_visited,self.created, self.modified)
+        return "{} owned by {}".format(self.name, self.owner)
+
+
+class UserFriendGroup(models.Model):
+    class Meta:
+        unique_together = ['member', 'friend_group']
+        verbose_name = "friend group members"
+        verbose_name_plural = "friend group members"
+
+    member = models.ForeignKey(
+        User,
+        verbose_name="member",
+        on_delete=models.CASCADE
+    )
+    friend_group = models.ForeignKey(
+        FriendGroup,
+        verbose_name="friend group",
+        on_delete=models.CASCADE
+    )
+    created = models.DateTimeField(
+        auto_now_add=True
+    )
+    modified = models.DateTimeField(
+        auto_now=True
+    )
+
+    # objects = models.Manager()
+
+    def __str__(self):
+        return "{} is a member of {}".format(self.member, self.friend_group)
+
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):

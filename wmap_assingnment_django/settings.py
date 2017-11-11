@@ -85,10 +85,10 @@ WSGI_APPLICATION = 'wmap_assingnment_django.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'wmap_assignment',
+        'NAME': 'wmap18',
         'USER': 'postgres',
         'PASSWORD': 'CompSci17',
-        'HOST': '138.68.163.239'
+        'HOST': '165.227.224.16',
     }
 }
 
@@ -147,5 +147,3 @@ REST_FRAMEWORK = {
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
-
-GDAL_LIBRARY_PATH = 'C:\\OSGeo4W\\bin\\gdal202.dll'

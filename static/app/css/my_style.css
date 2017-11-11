@@ -1,4 +1,4 @@
-.app-header {
+app-header {
     background-color: #b8e39c;
     color: #286ac0;
     font-family: sans-serif, Verdana, Arial;
@@ -32,7 +32,7 @@ h3 {
 }
 
 label {
-    font-family: Calibri;
+    font-family: Arial;
     font-weight: bold;
     font-size: medium;
 }

@@ -4,15 +4,16 @@ from django.contrib.auth import authenticate, login, logout, get_user_model
 from rest_framework import permissions, authentication, status, generics
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
-
 from rest_framework import exceptions
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import GEOSGeometry, LineString, Point, Polygon
 from rest_framework.authtoken.models import Token
+# from rest_framework.decorators import api_view, permission_classes
+
 
 class UsersList(generics.ListAPIView):
     permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = serializers.UserRegularSerializer
+    serializer_class = serializers.UserOtherSerializer
 
     def get_queryset(self):
         return get_user_model().objects.all().order_by("username")
@@ -20,14 +21,16 @@ class UsersList(generics.ListAPIView):
     def get_serializer_context(self):
         return {"request": self.request}
 
-class UserMain_R(generics.RetrieveAPIView):
+
+class UserMe_R(generics.RetrieveAPIView):
     permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = serializers.UserMainSerializer
+    serializer_class = serializers.UserMeSerializer
 
     def get_object(self):
         return get_user_model().objects.get(email=self.request.user.email)
 
-class UserRegular_R(generics.RetrieveAPIView):
+
+class UserOther_R(generics.RetrieveAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get_object(self):
@@ -45,14 +48,19 @@ class UserRegular_R(generics.RetrieveAPIView):
 
     def get_serializer_class(self):
         if self.request.user == self.other:
-            return serializers.UserMainSerializer
+            return serializers.UserMeSerializer
         else:
-            return serializers.UserRegularSerializer
+            return serializers.UserOtherSerializer
+
 
 class UpdatePosition(generics.UpdateAPIView):
     authentication_classes = (authentication.TokenAuthentication, authentication.SessionAuthentication)
     permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = serializers.UserMainSerializer
+    serializer_class = serializers.UserMeSerializer
+
+    # @method_decorator(csrf_exempt)
+    # def dispatch(self, *args, **kwargs):
+    #     return super(UpdatePosition, self).dispatch(*args, **kwargs)
 
     def get_object(self):
         return get_user_model().objects.get(email=self.request.user.email)
@@ -61,21 +69,26 @@ class UpdatePosition(generics.UpdateAPIView):
         try:
             lat1 = float(self.request.data.get("lat", False))
             lon1 = float(self.request.data.get("lon", False))
+            # lat2 = float(self.request.query_params.get("lat", False))
+            # lon2 = float(self.request.query_params.get("lon", False))
             if lat1 and lon1:
                 point = Point(lon1, lat1)
-
+            # elif lat2 and lon2:
+            #     point = Point(lon2, lat2)
             else:
                 point = None
 
             if point:
-
+                # serializer.instance.last_location = point
                 serializer.save(last_location = point)
             return serializer
         except:
             pass
 
+
 @api_view(["GET", ])
 @permission_classes((permissions.AllowAny,))
+# @csrf_exempt
 def token_login(request):
     if (not request.GET["username"]) or (not request.GET["password"]):
         return Response({"detail": "Missing username and/or password"}, status=status.HTTP_400_BAD_REQUEST)
