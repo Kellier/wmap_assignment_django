@@ -106,3 +106,83 @@ def token_login(request):
             return Response({"detail": "Inactive account"}, status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response({"detail": "Invalid User Id of Password"}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET", ])
+@permission_classes((permissions.IsAuthenticated,))
+@authentication_classes((authentication.TokenAuthentication, authentication.SessionAuthentication))
+def get_burritos(request):
+    #
+    # bounding box qry (50.745,7.17,50.75,7.18)
+    import overpy
+    api = overpy.Overpass()
+
+    # area_name = request.query_params.get("areaname", "")
+    cuisine = request.query_params.get("cuisine", "")
+    bbox = request.query_params.get("bbox", "")
+
+    query = """
+    [out:json][timeout:25]; 
+    (
+        node({1})["cuisine"="{0}"]; 
+        way({1})["cuisine"="{0}"]; 
+        rel({1})["cuisine"="{0}"]; 
+    ); 
+    out center body qt; 
+    """.format(cuisine, bbox)
+
+    try:
+        result = api.query(query)
+
+        result_geojson = {"type": "FeatureCollection", "features": []}
+        feature = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [None, None]
+            },
+            "properties": {
+            }
+        }
+
+        for node in result.nodes:
+            this_feature = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [None, None]
+                },
+                "properties": {
+                }
+            }
+
+            this_feature["geometry"]["coordinates"][0] = float(node.lon)
+            this_feature["geometry"]["coordinates"][1] = float(node.lat)
+
+            for tag in node.tags:
+                this_feature["properties"][tag] = node.tags[tag]
+
+            result_geojson["features"].append(this_feature)
+
+        for way in result.ways:
+            this_feature = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [None, None]
+                },
+                "properties": {
+                }
+            }
+
+            this_feature["geometry"]["coordinates"][0] = float(way.center_lon)
+            this_feature["geometry"]["coordinates"][1] = float(way.center_lat)
+
+            for tag in way.tags:
+                this_feature["properties"][tag] = way.tags[tag]
+
+            result_geojson["features"].append(this_feature)
+
+        return Response(result_geojson, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({"detail": e}, status=status.HTTP_400_BAD_REQUEST)
