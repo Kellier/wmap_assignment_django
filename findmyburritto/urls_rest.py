@@ -11,5 +11,5 @@ urlpatterns = [
     url(r'^user/(?P<email>[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)/$', rest_view.UserOther_R.as_view(), name='user-email'),
     url(r'^user/(?P<uid>\d+)/$', rest_view.UserOther_R.as_view(), name='user-username'),
     url(r'^updateposition/$', rest_view.UpdatePosition.as_view(), name='update-position'),
-    url(r'^getamenities/$', rest_view.get_burritos, name='get-burritos'),
+    url(r'^getburritos/$', rest_view.get_burritos, name='get-burritos'),
 ]
