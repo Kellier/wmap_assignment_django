@@ -186,3 +186,4 @@ def get_burritos(request):
 
     except Exception as e:
         return Response({"detail": e}, status=status.HTTP_400_BAD_REQUEST)
+
